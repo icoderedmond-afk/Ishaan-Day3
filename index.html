@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Animal Trivia Quiz</title>
+    <style>
+        :root {
+            --bg-image: url('https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=1920&q=80');
+            --card-bg: rgba(15, 23, 42, 0.88);
+            --accent-easy: #10b981;
+            --accent-medium: #38bdf8;
+            --accent-hard: #f59e0b;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --border-color: rgba(255, 255, 255, 0.15);
+            --hover-bg: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-image: var(--bg-image);
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: background-image 0.6s ease-in-out;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 32px;
+            width: 100%;
+            max-width: 680px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            transition: all 0.3s ease;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            background: linear-gradient(to right, #38bdf8, #a7f3d0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        p.subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .mode-selector {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            background-color: rgba(0, 0, 0, 0.4);
+            padding: 6px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--text-secondary);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .mode-btn.active.easy {
+            background-color: #10b981;
+            color: #000;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+        }
+
+        .mode-btn.active.medium {
+            background-color: #0284c7;
+            color: #fff;
+            box-shadow: 0 0 15px rgba(2, 132, 199, 0.5);
+        }
+
+        .mode-btn.active.hard {
+            background-color: #d97706;
+            color: #fff;
+            box-shadow: 0 0 15px rgba(217, 119, 6, 0.5);
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge.easy { background: rgba(16, 185, 129, 0.25); color: #34d399; border: 1px solid #10b981; }
+        .badge.medium { background: rgba(56, 189, 248, 0.25); color: #38bdf8; border: 1px solid #0284c7; }
+        .badge.hard { background: rgba(245, 158, 11, 0.25); color: #fbbf24; border: 1px solid #d97706; }
+
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            line-height: 1.5;
+            margin-bottom: 24px;
+            min-height: 60px;
+            color: #ffffff;
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .option-btn {
+            background-color: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 20px;
+            color: var(--text-primary);
+            text-align: left;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .option-btn.correct {
+            background-color: rgba(16, 185, 129, 0.3) !important;
+            border-color: #10b981 !important;
+            color: #6ee7b7 !important;
+            font-weight: 700;
+        }
+
+        .option-btn.incorrect {
+            background-color: rgba(239, 68, 68, 0.3) !important;
+            border-color: #ef4444 !important;
+            color: #fca5a5 !important;
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+            opacity: 0.9;
+        }
+
+        .explanation {
+            background-color: rgba(0, 0, 0, 0.5);
+            border-left: 4px solid #38bdf8;
+            padding: 16px;
+            border-radius: 0 10px 10px 0;
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #e2e8f0;
+            display: none;
+        }
+
+        .next-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(to right, #38bdf8, #6366f1);
+            color: white;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+            display: none;
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
+        }
+
+        .next-btn:hover {
+            opacity: 0.9;
+        }
+
+        .results-card {
+            text-align: center;
+            display: none;
+        }
+
+        .score-circle {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.6);
+            border: 4px solid #38bdf8;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 20px auto;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+        }
+
+        .score-num {
+            font-size: 2.5rem;
+            font-weight: 800;
+        }
+
+        .score-total {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .restart-btn {
+            background: linear-gradient(to right, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.05rem;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: opacity 0.2s;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .restart-btn:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Fauna Discovery</h1>
+        <p class="subtitle">Procedural Animal Kingdom Quiz Engine</p>
+    </header>
+
+    <!-- Difficulty Toggle -->
+    <div class="mode-selector" id="modeSelector">
+        <button class="mode-btn active easy" onclick="setDifficulty('easy')">Easy (Rainforest)</button>
+        <button class="mode-btn medium" onclick="setDifficulty('medium')">Medium (Barrier Reef)</button>
+        <button class="mode-btn hard" onclick="setDifficulty('hard')">Hard (Savannah)</button>
+    </div>
+
+    <!-- Quiz Area -->
+    <div id="quizArea">
+        <div class="stats-bar">
+            <span>Question <strong id="qCurrent">1</strong> of 10</span>
+            <span class="badge easy" id="diffBadge">Easy</span>
+            <span>Score: <strong id="scoreDisplay">0</strong></span>
+        </div>
+
+        <div class="question-text" id="questionText">Generating question...</div>
+
+        <div class="options-grid" id="optionsGrid"></div>
+
+        <div class="explanation" id="explanationText"></div>
+
+        <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Next Question</button>
+    </div>
+
+    <!-- Results Screen -->
+    <div class="results-card" id="resultsCard">
+        <h2>Quiz Completed!</h2>
+        <p class="subtitle" id="resultSubtitle">Here is how you performed:</p>
+
+        <div class="score-circle">
+            <span class="score-num" id="finalScore">0</span>
+            <span class="score-total">out of 10</span>
+        </div>
+
+        <p id="feedbackText" style="margin-bottom: 12px; color: #e2e8f0; font-size: 1.1rem;"></p>
+
+        <button class="restart-btn" onclick="restartQuiz()">Play Again</button>
+    </div>
+</div>
+
+<script>
+    // --- BACKGROUND IMAGES ---
+    const BACKGROUNDS = {
+        easy: 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=1920&q=80',
+        medium: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1920&q=80',
+        hard: 'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=1920&q=80'
+    };
+
+    // --- ANIMAL DATA DEFINITIONS ---
+
+    const easyAnimals = [
+        { id: "lion", name: "Lion", habitat: "African savannas and grasslands", badHabitats: ["Dense Amazonian rainforest canopy", "Subarctic tundra river basins", "Arid inland scrublands of Central Asia"], food: "Zebras, wildebeests, and antelopes", badFoods: ["Subterranean roots, tubers, and fungi", "Insects, fruit, and small rodents", "Fish, waterfowl, and aquatic plants"], fact: "their roar can be heard up to 5 miles away", badFacts: ["they can digest sharp bones in under 3 minutes", "their coats change color from summer to winter", "they sleep while standing on two legs to stay alert"], baby: "cub", badBabies: ["calf", "pup", "foal"], group: "pride", badGroups: ["flock", "pack", "troop"] },
+        { id: "panda", name: "Giant Panda", habitat: "bamboo forests of central China", badHabitats: ["Tropical mangroves of Southeast Asia", "Temperate pine forests of North America", "Highland steppes of Eastern Europe"], food: "bamboo shoots and leaves", badFoods: ["Freshwater fish and crustaceans", "Tree bark and pine needles", "Wild berries and small bird eggs"], fact: "they spend up to 12 hours a day eating bamboo", badFacts: ["they hibernate uninterrupted for six months each winter", "they communicate via high-pitched echo chirps", "their fur repels water using oil secretions"], baby: "cub", badBabies: ["joey", "kit", "chick"], group: "embarrassment", badGroups: ["colony", "herd", "swarm"] },
+        { id: "cheetah", name: "Cheetah", habitat: "open grasslands and savannas of Africa", badHabitats: ["Dense rainforest understory of West Africa", "Desert rocky crags of North Africa", "Sub-alpine meadows of Southern Africa"], food: "gazelles and hares", badFoods: ["Large buffalo and giraffe calves", "Burrowing rodents and insects", "Carrion scavenged from larger predators"], fact: "they can accelerate from 0 to 60 mph in 3 seconds", badFacts: ["their retractable claws allow them to climb smooth trees", "they hunt primarily during pitch-black nights", "they store surplus food high up in tree branches"], baby: "cub", badBabies: ["pup", "calf", "kit"], group: "coalition", badGroups: ["pack", "pride", "mob"] },
+        { id: "kangaroo", name: "Kangaroo", habitat: "Australian scrublands and forests", badHabitats: ["Tropical island jungles of New Guinea", "Coastal tidal marshes of Southern Asia", "High-altitude pine forests of the Pacific Rim"], food: "grasses, herbs, and shrubs", badFoods: ["Small lizards and insect larvae", "Fallen jungle fruits and seeds", "Hard-shelled nuts and tree roots"], fact: "they use their powerful tail for balance while jumping", badFacts: ["they swim across oceans to reach neighboring islands", "they produce milk from glands in their forepaws", "their hind legs can rotate completely backward"], baby: "joey", badBabies: ["calf", "cub", "pup"], group: "mob", badGroups: ["herd", "pride", "flock"] },
+        { id: "polar_bear", name: "Polar Bear", habitat: "arctic sea ice across the Frozen North", badHabitats: ["High alpine glaciers of the European Alps", "Subpolar pine forests of Eurasia", "Cold coastal fjords of Southern Chile"], food: "seals and marine animals", badFoods: ["Migrating salmon and freshwater trout", "Subarctic mosses and wild berries", "Caribou, oxen, and arctic hares"], fact: "their skin under their white fur is completely black", badFacts: ["their blubber generates a green glow underwater", "they freeze solid in ice during winter blizzards", "they build deep stone dens along coastal cliffs"], baby: "cub", badBabies: ["pup", "calf", "chick"], group: "sleuth", badGroups: ["pod", "colony", "pack"] },
+        { id: "penguin", name: "Emperor Penguin", habitat: "icy sea ice and coasts of Antarctica", badHabitats: ["Sub-Antarctic rocky islands of New Zealand", "Coastal cold-water beaches of South Africa", "Glacial fjordlands of Southern Argentina"], food: "fish, krill, and squid", badFoods: ["Deep-sea crabs and sea urchins", "Coastal crustaceans and limpets", "Intertidal sea moss and plankton"], fact: "males huddle together to incubate eggs during icy winters", badFacts: ["they build elaborate pebble nests along cliff walls", "they fly short distances to escape leopard seals", "they shed their beak outer layer every spring"], baby: "chick", badBabies: ["joey", "pup", "cub"], group: "waddle", badGroups: ["flock", "colony", "pod"] },
+        { id: "dolphin", name: "Bottlenose Dolphin", habitat: "warm temperate and tropical oceans worldwide", badHabitats: ["Cold polar gulfs and arctic shelf waters", "Deep oceanic abyssal trenches below 3000m", "Enclosed inland freshwater lakes"], food: "fish and squid", badFoods: ["Floating macro-algae and seagrass", "Hard-shelled mollusks and sea urchins", "Microscopic zooplankton and jellyfish"], fact: "they use echolocation and sleep with half their brain awake", badFacts: ["they change their skin color based on water temp", "they filter oxygen directly through skin pores", "they shed their dorsal fin every three years"], baby: "calf", badBabies: ["cub", "pup", "foal"], group: "pod", badGroups: ["school", "shoal", "flock"] },
+        { id: "elephant", name: "African Elephant", habitat: "African savannas, marshes, and forests", badHabitats: ["Arid coastal dunes of Northern Africa", "Sub-tropical mountain ranges of Central Africa", "Dense mangrove swamps of Coastal Africa"], food: "grasses, roots, fruit, and bark", badFoods: ["Insects, grubs, and small amphibians", "River algae and aquatic weeds", "Nuts, seeds, and bird eggs"], fact: "their large ears help radiate excess heat away from their body", badFacts: ["their trunk holds up to 50 gallons of stored drinking water", "their tusks are replaced four times during their lifetime", "they communicate through high-frequency screeching"], baby: "calf", badBabies: ["cub", "foal", "pup"], group: "herd", badGroups: ["pride", "mob", "pack"] },
+        { id: "giraffe", name: "Giraffe", habitat: "African open woodlands and grasslands", badHabitats: ["Dense equatorial rainforest canopies", "Montane evergreen forests of East Africa", "Riverine swamp forests of Southern Africa"], food: "acacia leaves and tree shoots", badFoods: ["Tough grasses and low-lying scrub", "Wild figs and jungle fruit", "Hard seeds and tree bark"], fact: "their tongue can be up to 20 inches long and dark purple", badFacts: ["their spot pattern changes completely as they age", "their neck contains 14 elongated vertebrae", "they sleep for 12 hours continuously every night"], baby: "calf", badBabies: ["foal", "cub", "joey"], group: "tower", badGroups: ["herd", "flock", "pride"] },
+        { id: "koala", name: "Koala", habitat: "eucalyptus forests of eastern Australia", badHabitats: ["Alpine woodland valleys of Tasmania", "Arid interior acacia scrub of Western Australia", "Subtropical coastal wetlands of Northern Australia"], food: "eucalyptus leaves exclusively", badFoods: ["Pine needles and tender ferns", "Wild berries and floral nectar", "Insects and tree sap"], fact: "they can sleep up to 18 to 22 hours per day", badFacts: ["they store excess leaves in cheek pouches for days", "they absorb water directly through their paw pads", "their fur changes color with seasons to reflect light"], baby: "joey", badBabies: ["cub", "pup", "kit"], group: "colony", badGroups: ["mob", "herd", "troop"] },
+        { id: "chameleon", name: "Chameleon", habitat: "warm tropical rainforests and deserts", badHabitats: ["Temperate deciduous woodlands of Europe", "Cool montane grasslands of South America", "Arid coastal dunes of Central Asia"], food: "insects and small invertebrates", badFoods: ["Tree nectar, pollen, and flower petals", "Microscopic mosses and lichen", "Small fish and aquatic larvae"], fact: "their eyes can move independently of each other", badFacts: ["their skin turns completely clear when hunting", "their tail can shoot out to grab distant branches", "they shed their scales one by one each week"], baby: "hatchling", badBabies: ["pup", "kit", "joey"], group: "camp", badGroups: ["flock", "colony", "swarm"] },
+        { id: "bald_eagle", name: "Bald Eagle", habitat: "lakes, rivers, and coastal areas across North America", badHabitats: ["Arid desert canyons of the Southwest", "High prairie grasslands of the Great Plains", "Dense interior pine forests far from water"], food: "fish, waterfowl, and small mammals", badFoods: ["Tree nuts, seeds, and acorns", "Crawling insects and worms", "Carrion scavenged exclusively from roadsides"], fact: "they build the largest tree nests of any bird species", badFacts: ["they mate with a new partner every breeding season", "their feathers turn bright white during winter months", "they hunt fish by diving entirely underwater up to 10 feet"], baby: "eaglet", badBabies: ["chick", "gosling", "fledgling"], group: "convocation", badGroups: ["flock", "pack", "gaggle"] },
+        { id: "red_fox", name: "Red Fox", habitat: "forests, grasslands, and suburban areas worldwide", badHabitats: ["Tropical rainforest floors of South America", "Arid interior deserts of Australia", "Open arctic tundra ice sheets"], food: "rodents, berries, and frogs", badFoods: ["Tree bark, moss, and acorns", "River fish and aquatic weeds", "Large ungulates and deer calves"], fact: "they use the Earth's magnetic field to hunt hidden prey", badFacts: ["they dig multi-mile underground tunnel networks", "their tail acts as a sail to run faster in wind", "they change vocal tones to imitate bird calls"], baby: "kit", badBabies: ["pup", "cub", "joey"], group: "skulk", badGroups: ["pack", "herd", "troop"] },
+        { id: "hippo", name: "Hippopotamus", habitat: "rivers and swamps of Sub-Saharan Africa", badHabitats: ["Coastal saltwater estuaries of East Africa", "Arid desert oases of Northern Africa", "Highland mountain lakes above 2000m"], food: "grasses grazing at night", badFoods: ["Aquatic weeds and submerged kelp", "Fish, frogs, and water snails", "Tree leaves, fruits, and roots"], fact: "they secrete a natural reddish sunscreen oil onto their skin", badFacts: ["they swim faster than sharks using tail fins", "their teeth are made of solid cartilage that regrows", "they breathe underwater using blowholes on their head"], baby: "calf", badBabies: ["cub", "foal", "pup"], group: "bloat", badGroups: ["herd", "pod", "pride"] },
+        { id: "honey_bee", name: "Honey Bee", habitat: "flowery gardens, meadows, and orchards worldwide", badHabitats: ["Dense interior pine forests without angiosperms", "Arid gravel deserts lacking vegetation", "High-altitude arctic tundra slopes"], food: "nectar and pollen from flowers", badFoods: ["Tree sap, resin, and plant juices", "Decaying leaf litter and fungi", "Insects, aphids, and honeydew"], fact: "they perform a 'waggle dance' to share flower locations", badFacts: ["they hibernate underground in solitude during winter", "they produce honey by digesting tree leaves", "their wings vibrate to create ultrasonic waves"], baby: "larva", badBabies: ["nymph", "chick", "pup"], group: "swarm", badGroups: ["colony", "flock", "hive"] }
+    ];
+
+    const mediumAnimals = [
+        { id: "okapi", name: "Okapi", trait: "striped hindquarters resembling a zebra", relation: "Giraffidae (Giraffe family)", badRelations: ["Equidae (Horse/Zebra family)", "Bovidae (Antelope family)", "Cervidae (Deer family)"], location: "dense rainforests of the Democratic Republic of Congo", badLocations: ["savannas of Kenya and Tanzania", "woodlands of Madagascar", "swamps of the Central African Republic"], adapt: "long prehensile blue tongue to strip leaves", badAdapts: ["ability to change stripe pattern for camouflage", "secreting bitter oil from skin to deter big cats", "webbed hooves for swimming across wide rivers"] },
+        { id: "axolotl", name: "Axolotl", trait: "feathery external gills and permanent larval state", relation: "Ambystomatidae (Mole Salamander family)", badRelations: ["Ranidae (True Frog family)", "Bufonidae (True Toad family)", "Cryptobranchidae (Giant Salamander family)"], location: "Lake Xochimilco basin in Mexico", badLocations: ["Amazon River basin in Brazil", "Lake Tanganyika in East Africa", "highland streams of the Andes"], adapt: "ability to fully regenerate lost limbs and internal organs", badAdapts: ["producing toxic skin secretions that paralyze fish", "changing body color from pink to black in mud", "hibernating in dry mud beds for several years"] },
+        { id: "pangolin", name: "Pangolin", trait: "overlapping defensive scales made of keratin", relation: "Pholidota (Placental mammal order)", badRelations: ["Dasypodidae (Armadillo family)", "Myrmecophagidae (Anteater family)", "Rodentia (Rodent order)"], location: "tropical regions of Africa and Asia", badLocations: ["rainforests of Central and South America", "arid interior scrublands of Australia", "temperate woodlands of Southern Europe"], adapt: "rolling into an tight armored ball when threatened", badAdapts: ["spraying noxious foul musk from tail glands", "burrowing 20 feet deep in under 10 seconds", "releasing sharp scales like quills when attacked"] },
+        { id: "fossa", name: "Fossa", trait: "slender cat-like body with semi-retractable claws", relation: "Eupleridae (Malagasy carnivore family)", badRelations: ["Felidae (Cat family)", "Viverridae (Civet family)", "Mustelidae (Weasel family)"], location: "forested areas across Madagascar", badLocations: ["rainforests of the Congo Basin", "tropical jungles of Sumatra and Borneo", "woodlands of Southern India"], adapt: "flexible ankles allowing down-trunk head-first tree climbing", badAdapts: ["gliding between branches using skin flaps", "using a prehensile tail to hang from tree limbs", "emitting ultrasonic pulses to navigate dense foliage"] },
+        { id: "archerfish", name: "Archerfish", trait: "flattened body with large eyes positioned for surface vision", relation: "Toxotidae (Archerfish family)", badRelations: ["Chaetodontidae (Butterflyfish family)", "Blenniidae (Blenny family)", "Cichlidae (Cichlid family)"], location: "mangrove swamps of Southeast Asia and Australia", badLocations: ["coral reefs of the Red Sea", "freshwater lakes of the Amazon Basin", "coastal estuaries of West Africa"], adapt: "shooting water droplets to knock down overhead resting insects", badAdapts: ["leaping 6 feet out of water to capture flying insects", "creating suction whirlpools to trap floating bugs", "producing small electric pulses to stun surface prey"] },
+        { id: "pistol_shrimp", name: "Pistol Shrimp", trait: "asymmetrical oversized snapping claw", relation: "Alpheidae (Snapping shrimp family)", badRelations: ["Palaemonidae (Cleanershrimp family)", "Penaeidae (Penaeid shrimp family)", "Stomatopoda (Mantis shrimp order)"], location: "shallow tropical ocean reefs worldwide", badLocations: ["deep hydrothermal vents in the Pacific", "cold sub-arctic rocky coastal shelf waters", "brackish inland coastal lagoons"], adapt: "creating cavitation shockwave bubbles hitting extreme temperatures", badAdapts: ["injecting fast-acting paralytic neurotoxin", "shooting sharp chitinous spikes from its claw", "emitting blinding flashes of bioluminescent light"] },
+        { id: "hoatzin", name: "Hoatzin", trait: "wing claws on chicks used to climb vegetation", relation: "Opisthocomiformes (Unique avian order)", badRelations: ["Cracidae (Guans and Curassows family)", "Cuculidae (Cuckoo family)", "Phasianidae (Pheasant family)"], location: "swamps and mangroves of the Amazon and Orinoco basins", badLocations: ["cloud forests of the Andes mountains", "flooded savannas of the Pantanal", "coastal rainforests of Central America"], adapt: "foregut leaf fermentation causing a distinctive manure-like odor", badAdapts: ["diving underwater for up to 5 minutes to feed", "mimicking snake vocalization sounds to scare predators", "excreting foul orange oil onto its wing feathers"] },
+        { id: "naked_mole_rat", name: "Naked Mole Rat", trait: "wrinkled hairless pink skin and prominent external incisors", relation: "Heterocephalidae (Eusocial rodent family)", badRelations: ["Bathyergidae (African mole-rat family)", "Geomyidae (Pocket gopher family)", "Spalacidae (Blind mole-rat family)"], location: "subterranean burrows of East Africa", badLocations: ["arid deserts of Southwestern North America", "pampas grasslands of South America", "desert scrublands of Central Australia"], adapt: "switching to fructose metabolism in near-zero oxygen environments", badAdapts: ["entering deep daily torpor to lower temperature", "absorbing soil moisture directly through hairless skin", "using magnetic mineral deposits in teeth to navigate"] },
+        { id: "lyrebird", name: "Lyrebird", trait: "elaborate tail feathers mimicking a lyre instrument", relation: "Menuridae (Passerine bird family)", badRelations: ["Paradisaeidae (Birds-of-paradise family)", "Ptilonorhynchidae (Bowerbird family)", "Furnariidae (Ovenbird family)"], location: "rainforests and moist woodlands of Eastern Australia", badLocations: ["tropical forests of New Guinea", "temperate rainforests of New Zealand", "subtropical forests of New Caledonia"], adapt: "near-perfect acoustic mimicry of natural and artificial sounds", badAdapts: ["building elaborate decorated bowers on forest floor", "performing synchronized dance routines with females", "inflating bright red throat pouches during courtship"] },
+        { id: "thorny_devil", name: "Thorny Devil", trait: "conical spiky scales covering its body", relation: "Agamidae (Dragon lizard family)", badRelations: ["Iguanidae (Iguana family)", "Molochidae (Horned lizard family)", "Scincidae (Skink family)"], location: "arid interior scrub deserts of Australia", badLocations: ["Atacama desert region of Chile", "Kalahari desert region of Southern Africa", "Mojave desert region of North America"], adapt: "skin capillary channels drawing ground moisture directly into its mouth", badAdapts: ["squirting blood from its eyes when cornered", "changing scale color to match surrounding sand", "detaching its spiky tail to distract predators"] },
+        { id: "capybara", name: "Capybara", trait: "webbed feet and barrel-shaped body", relation: "Caviidae (Cavy/Guinea pig family)", badRelations: ["Castoridae (Beaver family)", "Myocastoridae (Coypu family)", "Erethizontidae (New World porcupine family)"], location: "savannas and dense forests of South America near water", badLocations: ["swamps and bayous of Southeastern United States", "rainforest rivers of Central Africa", "coastal wetlands of Northern Australia"], adapt: "sleeping floating in water with only eyes and nostrils exposed", badAdapts: ["building massive underwater brush lodges", "slapping flat tail on water to warn group members", "digging multi-chamber riverbank burrow networks"] },
+        { id: "electric_eel", name: "Electric Eel", trait: "elongated cylindrical scaleless body", relation: "Gymnotidae (Naked-back knifefish family)", badRelations: ["Anguillidae (Freshwater eel family)", "Muraenidae (Moray eel family)", "Siluridae (Catfish family)"], location: "freshwater basins of Amazon and Orinoco rivers", badLocations: ["freshwater lakes of the African Rift Valley", "river systems of Southeast Asia", "subtropical rivers of Central America"], adapt: "specialized electrocyte organs generating high-voltage pulses", badAdapts: ["injecting toxic mucus through sharp dorsal spines", "producing bright bioluminescent flashes in dark water", "generating strong magnetic fields to disrupt prey orientation"] },
+        { id: "wombat", name: "Wombat", trait: "sturdy muscular body with backward-facing pouch", relation: "Vombatidae (Marsupial family)", badRelations: ["Phalangeridae (Possum family)", "Macropodidae (Kangaroo family)", "Phascolarctidae (Koala family)"], location: "forested mountainous regions of Southeastern Australia", badLocations: ["arid scrublands of Central Australia", "tropical rainforests of Queensland", "grassland plains of Western Australia"], adapt: "excreting cube-shaped droppings to mark territory boundaries", badAdapts: ["using a reinforced hard skull to block burrow entrances", "digging spiral tunnels over 100 feet long", "storing roots in underground cheek pouches"] },
+        { id: "cassowary", name: "Cassowary", trait: "helmeted casque on head and dagger-like inner toe claws", relation: "Casuariidae (Ratite bird family)", badRelations: ["Struthionidae (Ostrich family)", "Rheidae (Rhea family)", "Dromaiidae (Emu family)"], location: "tropical rainforests of New Guinea and Northeastern Australia", badLocations: ["subtropical woodlands of Eastern Australia", "savannas of Northern Australia", "rainforests of the Solomon Islands"], adapt: "delivering powerful slashing kicks when defending territory", badAdapts: ["headbutting tree trunks to knock down heavy fruit", "emitting low subsonic vibrations that shake tree leaves", "using helmeted casque to dig deep soil trenches"] },
+        { id: "binturong", name: "Binturong (Bearcat)", trait: "thick coarse black fur smelling like hot buttered popcorn", relation: "Viverridae (Civet family)", badRelations: ["Procyonidae (Raccoon family)", "Ursidae (Bear family)", "Mustelidae (Weasel family)"], location: "dense canopy forests of South and Southeast Asia", badLocations: ["rainforests of the Congo Basin in Africa", "tropical forests of Central America", "forested islands of Papua New Guinea"], adapt: "fully prehensile tail functioning as an extra limb for climbing", badAdapts: ["gliding between high trees using leathery membranes", "spraying defensive foul liquid from anal glands", "using sharp semi-retractable claws to dig tree burrows"] }
+    ];
+
+    const hardAnimals = [
+        { id: "vaquita", name: "Vaquita (Phocoena sinus)", status: "Critically Endangered (CR)", badStatuses: ["Endangered (EN)", "Vulnerable (VU)", "Near Threatened (NT)"], region: "northern tip of the Gulf of California, Mexico", badRegions: ["Galapagos Archipelago coastal waters", "Bay of Fundy, Canada", "Magdalena Bay, Baja California Sur"], threat: "accidental entanglement in illegal gillnets set for totoaba fish", badThreats: ["ingestion of microplastics and industrial chemical run-off", "decline in primary fish prey species due to warming water", "acoustic disturbance and vessel strikes from commercial shipping"], sub: "Porpoise family (Phocoenidae)", badSubs: ["Oceanic Dolphin family (Delphinidae)", "River Dolphin family (Iniidae)", "Beaked Whale family (Ziphiidae)"] },
+        { id: "ili_pika", name: "Ili Pika (Ochotona iliensis)", status: "Endangered (EN)", badStatuses: ["Critically Endangered (CR)", "Vulnerable (VU)", "Data Deficient (DD)"], region: "cliff faces of Tian Shan mountains in Xinjiang, China", badRegions: ["Qilian Mountains in Qinghai, China", "Altai Mountain range in Mongolia", "Pamir Mountain range in Tajikistan"], threat: "climate change warming alpine habitats and livestock grazing", badThreats: ["over-collection for illegal exotic pet trade", "spread of parasitic fungal skin infections", "fragmentation caused by high-altitude mining operations"], sub: "Lagomorpha order (Pika family Ochotonidae)", badSubs: ["Rodentia order (Chinchilla family Chinchillidae)", "Rodentia order (Viscacha family Abrocomidae)", "Lagomorpha order (Hare family Leporidae)"] },
+        { id: "kakapo", name: "Kakapo (Strigops habroptilus)", status: "Critically Endangered (CR)", badStatuses: ["Endangered (EN)", "Extinct in the Wild (EW)", "Vulnerable (VU)"], region: "predator-free offshore islands of New Zealand", badRegions: ["dense beech forests of South Island, New Zealand", "mountain ranges of Stewart Island, New Zealand", "sub-alpine scrublands of North Island, New Zealand"], threat: "introduced mammalian predators like stoats, ferrets, and cats", badThreats: ["deforestation caused by agricultural land clearing", "spread of psittacine beak and feather disease virus", "loss of native rimu tree fruiting cycles due to climate shift"], sub: "Strigopidae family (flightless lek-mating parrot)", badSubs: ["Cacatuidae family (Night parrot relative)", "Psittaculidae family (Ground parrot relative)", "Nestoridae family (Kea parrot relative)"] },
+        { id: "solenodon", name: "Solenodon (Solenodon paradoxus)", status: "Endangered (EN)", badStatuses: ["Critically Endangered (CR)", "Vulnerable (VU)", "Near Threatened (NT)"], region: "forested areas of Hispaniola (Dominican Republic / Haiti)", badRegions: ["forested highlands of Puerto Rico", "interior mountains of Jamaica", "limestone karst region of Western Cuba"], threat: "habitat fragmentation and predation by introduced dogs and cats", badThreats: ["over-hunting for bushmeat by rural communities", "competition with invasive black rats for soil invertebrates", "loss of food supply due to heavy pesticide agricultural run-off"], sub: "Soricomorpha order (Primitive venomous insectivore)", badSubs: ["Tenrecomorpha order (Spiny tenrec relative)", "Erinaceomorpha order (Hedgehog relative)", "Didelphimorphia order (Opossum relative)"] },
+        { id: "stick_insect", name: "Lord Howe Island Stick Insect (Dryococelus australis)", status: "Critically Endangered (CR)", badStatuses: ["Endangered (EN)", "Extinct in the Wild (EW)", "Vulnerable (VU)"], region: "Ball's Pyramid volcanic stack in the Pacific Ocean", badRegions: ["Norfolk Island nature reserve", "Chatham Islands archipelago", "Lord Howe Island main plateau"], threat: "invasive Black Rats introduced by historical shipwrecks", badThreats: ["invasive yellow crazy ant colony super-swarms", "severe saltwater spray from increasing tropical storms", "loss of primary melaleuca food plants due to invasive weeds"], sub: "Phasmatodea order ('Tree Lobster')", badSubs: ["Orthoptera order ('Giant Weta relative')", "Blattodea order ('Wood Roach relative')", "Mantodea order ('Tree Mantis relative')"] },
+        { id: "beaked_whale", name: "Cuvier's Beaked Whale (Ziphius cavirostris)", status: "Least Concern (LC)", badStatuses: ["Data Deficient (DD)", "Near Threatened (NT)", "Vulnerable (VU)"], region: "deep oceanic waters across temperate and tropical basins", badRegions: ["cold arctic continental shelf waters exclusively", "shallow coastal gulfs and enclosed seas", "tropical coral reef lagoons"], threat: "mid-frequency naval sonar causing decompression sickness", badThreats: ["ingestion of floating plastic debris mistaken for squid", "commercial longline fishing gear entanglement", "bioaccumulation of heavy metals in deep-sea food chains"], sub: "Deep-diving Odontoceti (Ziphiidae family)", badSubs: ["Physeteroidea family (Sperm whale relative)", "Kogiidae family (Pygmy sperm whale relative)", "Delphinidae family (Pilot whale relative)"] },
+        { id: "tree_pangolin", name: "Tree Pangolin (Phataginus tricuspis)", status: "Endangered (EN)", badStatuses: ["Critically Endangered (CR)", "Vulnerable (VU)", "Near Threatened (NT)"], region: "tropical rainforest belts of Central and West Africa", badRegions: ["miombo woodlands of Southern Africa", "coastal mangroves of East Africa", "forested highlands of Madagascar"], threat: "poaching for illegal international scale traffic and bushmeat", badThreats: ["widespread loss of hollow nesting trees from logging", "parasitic mite infestations spreading from domestic livestock", "decline in forest ant and termite populations due to fires"], sub: "Pholidota order (Manidae family)", badSubs: ["Cingulata order (Dasypodidae family)", "Pilosa order (Myrmecophagidae family)", "Tubulidentata order (Orycteropodidae family)"] },
+        { id: "white_rhino", name: "Northern White Rhinoceros (Ceratotherium simum cottoni)", status: "Critically Endangered (CR)", badStatuses: ["Extinct in the Wild (EW)", "Extinct (EX)", "Endangered (EN)"], region: "Ol Pejeta Conservancy in Kenya (protected sanctuary)", badRegions: ["Garamba National Park in Democratic Republic of Congo", "Sapo National Park in Liberia", "Zakouma National Park in Chad"], threat: "decades of severe poaching for rhino horn trade", badThreats: ["loss of savannas due to desertification", "genetic bottleneck causing lethal autoimmune disease", "civil conflicts destroying primary park infrastructure"], sub: "Subspecies of Ceratotherium simum", badSubs: ["Subspecies of Diceros bicornis", "Subspecies of Rhinoceros unicornis", "Subspecies of Dicerorhinus sumatrensis"] },
+        { id: "hirola", name: "Hirola (Beatragus hunteri)", status: "Critically Endangered (CR)", badStatuses: ["Endangered (EN)", "Vulnerable (VU)", "Near Threatened (NT)"], region: "arid border region between Kenya and Somalia", badRegions: ["Ogaden plateau of Eastern Ethiopia", "Afar depression of Northern Djibouti", "Arikok region of Southern Eritrea"], threat: "habitat degradation, severe drought, and livestock competition", badThreats: ["poaching for high-value trophy horns", "rinderpest viral disease outbreaks spread by cattle", "encroachment of invasive thorny scrub tree species"], sub: "Alcelaphinae subfamily ('Four-eyed antelope')", badSubs: ["Antilopinae subfamily ('Gazelle relative')", "Hippotraginae subfamily ('Oryx relative')", "Reduncinae subfamily ('Waterbuck relative')"] },
+        { id: "gharial", name: "Gharial (Gavialis gangeticus)", status: "Critically Endangered (CR)", badStatuses: ["Endangered (EN)", "Vulnerable (VU)", "Data Deficient (DD)"], region: "river systems of Northern India and Nepal", badRegions: ["Mekong River basin in Laos and Cambodia", "Irrawaddy River basin in Myanmar", "Chao Phraya River basin in Thailand"], threat: "sand mining, dam construction, and net entanglement", badThreats: ["industrial chemical effluent polluting river water", "egg harvest by local agricultural communities", "competition for fish prey with invasive catfish species"], sub: "Gavialidae family (Fish-eating crocodilian)", badSubs: ["Crocodylidae family (False gharial relative)", "Alligatoridae family (Caiman relative)", "Protosuchidae family (Primitive crocodilian)"] },
+        { id: "anoa", name: "Dwarf Water Buffalo / Anoa (Bubalus depressicornis)", status: "Endangered (EN)", badStatuses: ["Critically Endangered (CR)", "Vulnerable (VU)", "Near Threatened (NT)"], region: "rainforests of Sulawesi island, Indonesia", badRegions: ["mountain forests of Sumatra, Indonesia", "interior jungle of Kalimantan, Indonesia", "highlands of Mindoro, Philippines"], threat: "uncontrolled hunting for meat and agricultural encroachment", badThreats: ["transmission of malignant catarrhal fever from domestic cattle", "habitat destruction caused by palm oil plantations", "loss of mineral lick sites due to gold mining activities"], sub: "Bovidae wild cattle family (Subgenus Anoao)", badSubs: ["Tragelaphini tribe (Spiral-horned bovid)", "Boselaphini tribe (Four-horned bovid)", "Caprinae subfamily (Wild goat relative)"] },
+        { id: "amur_leopard", name: "Amur Leopard (Panthera pardus orientalis)", status: "Critically Endangered (CR)", badStatuses: ["Endangered (EN)", "Extinct in the Wild (EW)", "Vulnerable (VU)"], region: "border region between Far East Russia and Northeast China", badRegions: ["Hokkaido forest region of Northern Japan", "Sikhote-Alin mountains of Central Siberia", "Korean Peninsula demilitarized zone"], threat: "poaching for fur, prey depletion, and forest fires", badThreats: ["distemper virus contracted from domestic dog packs", "genetic deformities caused by severe inbreeding", "loss of winter den sites due to commercial timber logging"], sub: "Panthera pardus subspecies", badSubs: ["Panthera uncia subspecies", "Panthera tigris subspecies", "Neofelis nebulosa subspecies"] },
+        { id: "saola", name: "Saola (Pseudoryx nghetinhensis)", status: "Critically Endangered (CR)", badStatuses: ["Endangered (EN)", "Data Deficient (DD)", "Extinct in the Wild (EW)"], region: "Annamite Range forest border between Vietnam and Laos", badRegions: ["Cardamom Mountains region of Cambodia", "Tenasserim Hills region of Myanmar", "Dângrêk Mountains region of Thailand"], threat: "indiscriminate commercial snaring targeting wild pigs and deer", badThreats: ["deforestation for rubber and coffee plantations", "trophy hunting for its unique long straight horns", "disease transmission from free-ranging domestic goats"], sub: "Bovidae family ('Asian Unicorn')", badSubs: ["Cervidae family ('Tufted deer relative')", "Tragulidae family ('Mouse-deer relative')", "Moschidae family ('Musk deer relative')"] },
+        { id: "tuatara", name: "Tuatara (Sphenodon punctatus)", status: "Vulnerable (VU)", badStatuses: ["Near Threatened (NT)", "Endangered (EN)", "Least Concern (LC)"], region: "offshore islands of New Zealand (Cook Strait & Bay of Plenty)", badRegions: ["South Island alpine valleys of New Zealand", "Stewart Island coastal forests of New Zealand", "Chatham Islands nature reserves"], threat: "historical nest predation by introduced Polynesian rats (kiore)", badThreats: ["loss of seabird burrows used for nesting sites", "bacterial skin disease caused by warming soil temps", "competition for invertebrate prey with invasive wasps"], sub: "Rhynchocephalia order (Sole surviving member)", badSubs: ["Squamata order (Agamid lizard relative)", "Squamata order (Monitor lizard relative)", "Testudines order (Primitive turtle relative)"] },
+        { id: "javan_rhino", name: "Javan Rhinoceros (Rhinoceros sondaicus)", status: "Critically Endangered (CR)", badStatuses: ["Extinct in the Wild (EW)", "Endangered (EN)", "Vulnerable (VU)"], region: "Ujung Kulon National Park at western tip of Java, Indonesia", badRegions: ["Way Kambas National Park in Sumatra, Indonesia", "Taman Negara National Park in Peninsular Malaysia", "Cat Tien National Park in Vietnam"], threat: "extremely small population size vulnerable to natural disasters and disease", badThreats: ["relentless active poaching by international syndicates", "loss of wallowing mud sites due to sea level rise", "competition for browse plants with invasive Arenga palms"], sub: "Rhinocerotidae family (Single-horned rhino)", badSubs: ["Dicerorhinidae family (Two-horned Asian rhino)", "Diceros family (Hook-lipped rhino relative)", "Ceratotherium family (Square-lipped rhino relative)"] }
+    ];
+
+    // --- QUESTION POOL BUILDERS ---
+
+    function buildEasyQuestionPoolForAnimal(a) {
+        return [
+            { animalId: a.id, q: `In which natural environment do wild ${a.name}s primarily live?`, options: [a.habitat, ...a.badHabitats], correct: 0, exp: `${a.name}s are natively adapted to live in ${a.habitat}.` },
+            { animalId: a.id, q: `What constitutes the main primary diet for a wild ${a.name}?`, options: [a.food, ...a.badFoods], correct: 0, exp: `The primary food source for a ${a.name} consists of ${a.food}.` },
+            { animalId: a.id, q: `Which notable behavioral trait or physical fact is famous regarding the ${a.name}?`, options: [a.fact.charAt(0).toUpperCase() + a.fact.slice(1), ...a.badFacts], correct: 0, exp: `A famous fact about the ${a.name} is that ${a.fact}.` },
+            { animalId: a.id, q: `What is a young or offspring of a ${a.name} called?`, options: [a.baby.charAt(0).toUpperCase() + a.baby.slice(1), ...a.badBabies.map(b => b.charAt(0).toUpperCase() + b.slice(1))], correct: 0, exp: `A baby or young offspring of a ${a.name} is officially referred to as a ${a.baby}.` },
+            { animalId: a.id, q: `What is the collective noun used for a group of ${a.name}s?`, options: [a.group.charAt(0).toUpperCase() + a.group.slice(1), ...a.badGroups.map(g => g.charAt(0).toUpperCase() + g.slice(1))], correct: 0, exp: `A gathering or group of ${a.name}s is officially called a ${a.group}.` }
+        ];
+    }
+
+    function buildMediumQuestionPoolForAnimal(a) {
+        return [
+            { animalId: a.id, q: `The ${a.name}, known for featuring ${a.trait}, belongs to which specific taxonomic group?`, options: [a.relation, ...a.badRelations], correct: 0, exp: `The ${a.name} is classified under ${a.relation}.` },
+            { animalId: a.id, q: `In which specific geographical location is the ${a.name} natively found?`, options: [a.location, ...a.badLocations], correct: 0, exp: `The native distribution of the ${a.name} is in the ${a.location}.` },
+            { animalId: a.id, q: `Which physiological or behavioral adaptation is specialized in the ${a.name}?`, options: [a.adapt.charAt(0).toUpperCase() + a.adapt.slice(1), ...a.badAdapts.map(ad => ad.charAt(0).toUpperCase() + ad.slice(1))], correct: 0, exp: `The ${a.name} is famous for its ${a.adapt}.` }
+        ];
+    }
+
+    function buildHardQuestionPoolForAnimal(a) {
+        return [
+            { animalId: a.id, q: `What is the precise IUCN Red List conservation status assigned to the ${a.name}?`, options: [a.status, ...a.badStatuses], correct: 0, exp: `The ${a.name} is currently designated as ${a.status}.` },
+            { animalId: a.id, q: `The ${a.name} is natively restricted or endemic to which specific geographic locality?`, options: [a.region, ...a.badRegions], correct: 0, exp: `The native geographical range of the ${a.name} is the ${a.region}.` },
+            { animalId: a.id, q: `Which specific ecological threat is documented as the primary driver of decline for the ${a.name}?`, options: [a.threat, ...a.badThreats], correct: 0, exp: `The primary threat facing ${a.name} populations is ${a.threat}.` },
+            { animalId: a.id, q: `Taxonomically, how is the obscure ${a.name} categorized?`, options: [a.sub, ...a.badSubs], correct: 0, exp: `Taxonomically, ${a.name} is categorized under ${a.sub}.` }
+        ];
+    }
+
+    // --- GAME ENGINE STATE ---
+    let currentDifficulty = 'easy';
+    let currentQuestions = [];
+    let currentIndex = 0;
+    let score = 0;
+    let answered = false;
+
+    function shuffleArray(arr) {
+        let copy = [...arr];
+        for (let i = copy.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+    }
+
+    function loadQuestions() {
+        let animalList, builderFunc;
+
+        if (currentDifficulty === 'easy') {
+            animalList = easyAnimals;
+            builderFunc = buildEasyQuestionPoolForAnimal;
+        } else if (currentDifficulty === 'medium') {
+            animalList = mediumAnimals;
+            builderFunc = buildMediumQuestionPoolForAnimal;
+        } else {
+            animalList = hardAnimals;
+            builderFunc = buildHardQuestionPoolForAnimal;
+        }
+
+        // Pick 10 DISTINCT animals randomly
+        let shuffledAnimals = shuffleArray(animalList);
+        let selected10Animals = shuffledAnimals.slice(0, 10);
+
+        let quiz10Questions = [];
+        selected10Animals.forEach(animal => {
+            let animalQuestions = builderFunc(animal);
+            let chosenQ = animalQuestions[Math.floor(Math.random() * animalQuestions.length)];
+            
+            let shuffledOpts = [...chosenQ.options];
+            let correctText = chosenQ.options[chosenQ.correct];
+            for (let i = shuffledOpts.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1));
+                [shuffledOpts[i], shuffledOpts[j]] = [shuffledOpts[j], shuffledOpts[i]];
+            }
+
+            quiz10Questions.push({
+                q: chosenQ.q,
+                options: shuffledOpts,
+                correct: shuffledOpts.indexOf(correctText),
+                exp: chosenQ.exp,
+                animalId: chosenQ.animalId
+            });
+        });
+
+        currentQuestions = shuffleArray(quiz10Questions);
+    }
+
+    function setDifficulty(diff) {
+        currentDifficulty = diff;
+        document.body.style.backgroundImage = `url('${BACKGROUNDS[diff]}')`;
+
+        const buttons = document.querySelectorAll('.mode-btn');
+        buttons.forEach(btn => {
+            btn.classList.remove('active', 'easy', 'medium', 'hard');
+            if (btn.textContent.toLowerCase().includes(diff)) {
+                btn.classList.add('active', diff);
+            }
+        });
+
+        const badge = document.getElementById('diffBadge');
+        badge.className = `badge ${diff}`;
+        badge.textContent = diff.toUpperCase();
+
+        restartQuiz();
+    }
+
+    function displayQuestion() {
+        answered = false;
+        const qData = currentQuestions[currentIndex];
+
+        document.getElementById('qCurrent').textContent = currentIndex + 1;
+        document.getElementById('scoreDisplay').textContent = score;
+        document.getElementById('questionText').textContent = qData.q;
+        
+        const optionsGrid = document.getElementById('optionsGrid');
+        optionsGrid.innerHTML = '';
+
+        const expBox = document.getElementById('explanationText');
+        expBox.style.display = 'none';
+        expBox.textContent = '';
+
+        document.getElementById('nextBtn').style.display = 'none';
+
+        qData.options.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = `<span>${opt}</span>`;
+            btn.onclick = () => selectOption(idx);
+            optionsGrid.appendChild(btn);
+        });
+    }
+
+    function selectOption(selectedIndex) {
+        if (answered) return;
+        answered = true;
+
+        const qData = currentQuestions[currentIndex];
+        const buttons = document.querySelectorAll('.option-btn');
+
+        buttons.forEach((btn, idx) => {
+            btn.disabled = true;
+            if (idx === qData.correct) {
+                btn.classList.add('correct');
+            }
+            if (idx === selectedIndex && selectedIndex !== qData.correct) {
+                btn.classList.add('incorrect');
+            }
+        });
+
+        if (selectedIndex === qData.correct) {
+            score++;
+            document.getElementById('scoreDisplay').textContent = score;
+        }
+
+        const expBox = document.getElementById('explanationText');
+        expBox.textContent = qData.exp;
+        expBox.style.display = 'block';
+
+        const nextBtn = document.getElementById('nextBtn');
+        if (currentIndex < 9) {
+            nextBtn.textContent = "Next Question";
+        } else {
+            nextBtn.textContent = "See Final Results";
+        }
+        nextBtn.style.display = 'block';
+    }
+
+    function nextQuestion() {
+        currentIndex++;
+        if (currentIndex < 10) {
+            displayQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        document.getElementById('quizArea').style.display = 'none';
+        document.getElementById('modeSelector').style.display = 'none';
+        
+        const resultsCard = document.getElementById('resultsCard');
+        resultsCard.style.display = 'block';
+
+        document.getElementById('finalScore').textContent = score;
+
+        let feedback = "";
+        if (score === 10) feedback = "Flawless performance! You are a master zoologist!";
+        else if (score >= 7) feedback = "Great job! You have impressive fauna knowledge.";
+        else if (score >= 4) feedback = "Good try! Give it another go to boost your score.";
+        else feedback = "Animal facts can be tough! Try another round with fresh questions.";
+
+        document.getElementById('feedbackText').textContent = feedback;
+    }
+
+    function restartQuiz() {
+        currentIndex = 0;
+        score = 0;
+        
+        document.getElementById('resultsCard').style.display = 'none';
+        document.getElementById('quizArea').style.display = 'block';
+        document.getElementById('modeSelector').style.display = 'flex';
+
+        loadQuestions();
+        displayQuestion();
+    }
+
+    window.onload = () => {
+        setDifficulty('easy');
+    };
+</script>
+
+</body>
+</html>
